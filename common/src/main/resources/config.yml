@@ -1,0 +1,13 @@
+general:
+
+broadcasting:
+  enabled: false
+  mode: "REDIS"
+
+status:
+  enabled: false
+  sources:
+    - type: "PING"
+      host: "localhost"
+      port: 25566
+      timeout: 5000
