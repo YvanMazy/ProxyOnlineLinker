@@ -34,7 +34,7 @@ public final class ConfigurationReader {
         }
         final Constructor constructor = new Constructor(DummyConfiguration.class, new LoaderOptions());
 
-        final PropertyUtils propertyUtils = constructor.getPropertyUtils();
+        final PropertyUtils propertyUtils = new KebabCasePropertyUtils();
         propertyUtils.setSkipMissingProperties(true);
         propertyUtils.setAllowReadOnlyProperties(true);
         constructor.setPropertyUtils(propertyUtils);
