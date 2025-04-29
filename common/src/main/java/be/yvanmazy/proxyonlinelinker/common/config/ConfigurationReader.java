@@ -30,7 +30,9 @@ public final class ConfigurationReader {
         final Yaml yaml = new Yaml(constructor);
 
         try (final InputStream in = Files.newInputStream(path)) {
-            return yaml.loadAs(in, DummyConfiguration.class);
+            final DummyConfiguration configuration = yaml.loadAs(in, DummyConfiguration.class);
+            configuration.validate();
+            return configuration;
         }
     }
 
