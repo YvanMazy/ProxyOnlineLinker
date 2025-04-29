@@ -86,10 +86,22 @@ public final class DummyConfiguration implements Configuration {
     public static class Status implements Configuration.Status {
 
         private boolean enabled;
+        private long globalCacheExpiration;
+        private boolean requestOnDemand;
 
         @Override
         public boolean enabled() {
             return this.enabled;
+        }
+
+        @Override
+        public long globalCacheExpiration() {
+            return this.globalCacheExpiration;
+        }
+
+        @Override
+        public boolean requestOnDemand() {
+            return this.requestOnDemand;
         }
 
         @Override
@@ -99,6 +111,14 @@ public final class DummyConfiguration implements Configuration {
 
         public void setEnabled(final boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public void setGlobalCacheExpiration(final long globalCacheExpiration) {
+            this.globalCacheExpiration = globalCacheExpiration;
+        }
+
+        public void setRequestOnDemand(final boolean requestOnDemand) {
+            this.requestOnDemand = requestOnDemand;
         }
 
         @Override

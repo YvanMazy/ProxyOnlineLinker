@@ -6,8 +6,11 @@ broadcasting:
 
 status:
   enabled: false
+  global-cache-expiration: 1500
+  request-on-demand: true
   sources:
     - type: "PING"
       host: "localhost"
       port: 25566
       timeout: 5000
+      cache-expiration: -1

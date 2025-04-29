@@ -4,6 +4,7 @@ import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 import java.util.List;
 
@@ -36,6 +37,13 @@ public interface Configuration {
 
         @Contract(pure = true)
         boolean enabled();
+
+        @Contract(pure = true)
+        @Range(from = -1L, to = Long.MAX_VALUE)
+        long globalCacheExpiration();
+
+        @Contract(pure = true)
+        boolean requestOnDemand();
 
         @Contract(pure = true)
         @NotNull List<StatusSource> sources();
