@@ -20,6 +20,18 @@ public final class ConfigurationReader {
 
     @Contract(pure = true)
     public static @NotNull Configuration read(final @NotNull Path path) throws IOException {
+        if (Files.notExists(path)) {
+            final Path parent = path.getParent();
+            if (Files.notExists(parent)) {
+                Files.createDirectories(parent);
+            }
+            final InputStream stream = ConfigurationReader.class.getClassLoader().getResourceAsStream(path.getFileName().toString());
+            if (stream != null) {
+                try (stream) {
+                    Files.copy(stream, path);
+                }
+            }
+        }
         final Constructor constructor = new Constructor(DummyConfiguration.class, new LoaderOptions());
 
         final PropertyUtils propertyUtils = constructor.getPropertyUtils();
