@@ -1,14 +1,26 @@
-group = 'be.yvanmazy'
-version = '1.0'
-
 buildscript {
     repositories {
         mavenCentral()
     }
 }
 
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.6' apply false
+}
+
+group = 'be.yvanmazy'
+version = '1.0'
+
+dependencies {
+    subprojects.each { final project ->
+        implementation project
+    }
+}
+
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'com.gradleup.shadow'
 
     group = rootProject.group
     version = rootProject.version
@@ -32,6 +44,15 @@ allprojects {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(17))
         }
+    }
+
+    shadowJar {
+        if (project == rootProject) {
+            archiveBaseName.set(rootProject.name)
+        } else {
+            archiveBaseName.set(rootProject.name + '-' + project.name)
+        }
+        archiveClassifier.set('')
     }
 
 }
