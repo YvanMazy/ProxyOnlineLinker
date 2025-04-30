@@ -1,9 +1,10 @@
 package be.yvanmazy.proxyonlinelinker.common.status.source;
 
-import be.yvanmazy.proxyonlinelinker.common.status.source.exception.SourceFetchFailException;
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -14,6 +15,7 @@ import java.util.Objects;
 
 public class PingSource implements StatusSource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PingSource.class);
     private static final byte[] STATUS_REQUEST_PACKET = {0x00};
 
     private final String host;
@@ -37,8 +39,7 @@ public class PingSource implements StatusSource {
     }
 
     @Override
-    public int fetch() throws SourceFetchFailException {
-        // TODO: Handle normal and abnormal failure exception
+    public int fetch() {
         try (final Socket socket = this.openSocket()) {
             // Connect to the target server
             socket.setSoTimeout(this.timeout);
@@ -54,7 +55,8 @@ public class PingSource implements StatusSource {
             readVarInt(in); // Read packet length
             final int packetId = readVarInt(in);
             if (packetId != 0x00) { // Expected packet ID
-                throw new SourceFetchFailException("Unexpected packet ID: " + packetId);
+                this.warnError("Unexpected packet ID=" + packetId);
+                return -1;
             }
 
             final int jsonLength = readVarInt(in); // TODO: Check length validity
@@ -73,8 +75,13 @@ public class PingSource implements StatusSource {
             }
             return Integer.parseInt(json.substring(idx, end).trim());
         } catch (final IOException | NumberFormatException e) {
-            throw new SourceFetchFailException("Failed to fetch status", e);
+            this.warnError("Exception=" + e.getMessage());
+            return -1;
         }
+    }
+
+    private void warnError(final String message) {
+        LOGGER.warn("Failed to ping: {}", message);
     }
 
     private byte[] buildHandshakePacket() throws IOException {
