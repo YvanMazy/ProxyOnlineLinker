@@ -32,7 +32,9 @@ public final class ConfigurationReader {
                 }
             }
         }
-        final Constructor constructor = new Constructor(DummyConfiguration.class, new LoaderOptions());
+        final LoaderOptions loaderOptions = new LoaderOptions();
+        loaderOptions.setEnumCaseSensitive(false);
+        final Constructor constructor = new Constructor(DummyConfiguration.class, loaderOptions);
 
         final PropertyUtils propertyUtils = new KebabCasePropertyUtils();
         propertyUtils.setSkipMissingProperties(true);
