@@ -29,6 +29,19 @@ public final class Preconditions {
     }
 
     @Contract(pure = true)
+    public static <T, I extends Iterable<T>> @NotNull I requireNonNullEntries(final I iterable, final String name) {
+        checkNotNull(iterable, name);
+        int i = 0;
+        for (final T value : iterable) {
+            if (value == null) {
+                throw new IllegalArgumentException(name + ": element at " + i + " must not be null");
+            }
+            i++;
+        }
+        return iterable;
+    }
+
+    @Contract(pure = true)
     public static void checkNotNull(final Object object, final String name) {
         if (object == null) {
             throw new NullPointerException(name + " must not be null");

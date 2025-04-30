@@ -53,6 +53,8 @@ public interface Configuration extends StateValidator {
 
     interface Status extends StateValidator {
 
+        // TODO: Add fallback strategy
+
         @Contract(pure = true)
         boolean enabled();
 
@@ -69,7 +71,7 @@ public interface Configuration extends StateValidator {
         @Override
         default void validate() {
             Preconditions.checkRange(this.globalCacheExpiration(), -1L, Long.MAX_VALUE, "globalCacheExpiration");
-            Preconditions.checkNotNull(this.sources(), "sources");
+            Preconditions.requireNonNullEntries(this.sources(), "sources");
         }
 
     }
