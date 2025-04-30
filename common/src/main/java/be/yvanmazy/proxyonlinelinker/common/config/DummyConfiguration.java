@@ -1,11 +1,14 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
+import be.yvanmazy.proxyonlinelinker.common.status.source.CacheLayerSource;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
+import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSourceType;
+import be.yvanmazy.proxyonlinelinker.common.util.MapTypeAccessor;
+import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public final class DummyConfiguration implements Configuration {
 
@@ -88,6 +91,7 @@ public final class DummyConfiguration implements Configuration {
         private boolean enabled;
         private long globalCacheExpiration;
         private boolean requestOnDemand;
+        private List<StatusSource> sources;
 
         @Override
         public boolean enabled() {
@@ -106,7 +110,7 @@ public final class DummyConfiguration implements Configuration {
 
         @Override
         public @NotNull List<StatusSource> sources() {
-            return List.of();
+            return this.sources;
         }
 
         public void setEnabled(final boolean enabled) {
@@ -121,9 +125,35 @@ public final class DummyConfiguration implements Configuration {
             this.requestOnDemand = requestOnDemand;
         }
 
+        public void setSources(final List<Map<String, Object>> sources) {
+            final List<StatusSource> list = new ArrayList<>(sources.size());
+
+            for (final Map<String, Object> source : sources) {
+                final MapTypeAccessor accessor = new MapTypeAccessor(source);
+                final String rawType = accessor.getString("type");
+                final StatusSourceType type = StatusSourceType.valueOf(rawType.toUpperCase());
+
+                StatusSource builtSource = type.create(accessor);
+
+                final long cacheExpiration = accessor.getLong("cache-expiration", -1L);
+                if (cacheExpiration > 0) {
+                    builtSource = new CacheLayerSource(builtSource, cacheExpiration);
+                }
+
+                list.add(builtSource);
+            }
+
+            this.sources = Collections.unmodifiableList(list);
+        }
+
+        public void setRawSources(final @NotNull List<StatusSource> sources) {
+            this.sources = Preconditions.requireNonNullEntries(sources, "sources");
+        }
+
         @Override
         public String toString() {
-            return "Status{" + "enabled=" + this.enabled + '}';
+            return "Status{" + "enabled=" + this.enabled + ", globalCacheExpiration=" + this.globalCacheExpiration + ", requestOnDemand=" +
+                    this.requestOnDemand + ", sources=" + this.sources + '}';
         }
 
     }
