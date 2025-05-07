@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.github.YvanMazy.TransferProxy:api:1.1.0'
+    compileOnly 'com.github.YvanMazy.TransferProxy:api:2d84b7659a'
 }
