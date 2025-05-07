@@ -7,7 +7,7 @@ broadcasting:
 status:
   enabled: false
   global-cache-expiration: 1500
-  request-on-demand: true
+  request-on-demand: false
   sources:
     - type: "PING"
       host: "localhost"

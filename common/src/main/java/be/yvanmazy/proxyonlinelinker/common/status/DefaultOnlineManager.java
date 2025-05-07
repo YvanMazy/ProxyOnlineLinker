@@ -36,7 +36,8 @@ public class DefaultOnlineManager implements OnlineManager {
         if (!this.config.requestOnDemand()) {
             final long expiration = this.config.globalCacheExpiration();
             this.executorService = Executors.newSingleThreadScheduledExecutor();
-            this.executorService.scheduleWithFixedDelay(() -> this.checkOnline(false), expiration, expiration, TimeUnit.MILLISECONDS);
+            // TODO: Add an option to sleep scheduler after X seconds of inactivity
+            this.executorService.scheduleWithFixedDelay(() -> this.checkOnline(false), 0L, expiration, TimeUnit.MILLISECONDS);
         }
     }
 
