@@ -4,7 +4,7 @@ import be.yvanmazy.proxyonlinelinker.common.config.Configuration;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 
-public interface StatusManager {
+public interface OnlineManager {
 
     void start(final @NotNull Configuration configuration);
 

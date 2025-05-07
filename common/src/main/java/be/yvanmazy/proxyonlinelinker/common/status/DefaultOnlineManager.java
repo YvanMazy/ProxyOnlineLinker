@@ -12,9 +12,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class DefaultStatusManager implements StatusManager {
+public class DefaultOnlineManager implements OnlineManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultStatusManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOnlineManager.class);
 
     private Configuration.Status config;
     private ScheduledExecutorService executorService;
