@@ -1,0 +1,5 @@
+name: ProxyOnlineLinker
+description: Link online count between proxy and server - BungeeCord support.
+author: Yvan Mazy
+version: "1.0"
+main: be.yvanmazy.proxyonlinelinker.bungeecord.Main
