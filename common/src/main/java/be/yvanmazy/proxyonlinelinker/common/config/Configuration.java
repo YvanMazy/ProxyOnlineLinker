@@ -1,6 +1,7 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
+import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import be.yvanmazy.proxyonlinelinker.common.util.StateValidator;
@@ -68,10 +69,26 @@ public interface Configuration extends StateValidator {
         @Contract(pure = true)
         @NotNull List<StatusSource> sources();
 
+        @Contract(pure = true)
+        @NotNull Replacement replacement();
+
         @Override
         default void validate() {
             Preconditions.checkRange(this.globalCacheExpiration(), -1L, Long.MAX_VALUE, "globalCacheExpiration");
             Preconditions.requireNonNullEntries(this.sources(), "sources");
+            this.replacement().validate();
+        }
+
+        interface Replacement extends StateValidator {
+
+            @Contract(pure = true)
+            @NotNull ReplacementStrategy strategy();
+
+            @Override
+            default void validate() {
+                Preconditions.checkNotNull(this.strategy(), "strategy");
+            }
+
         }
 
     }

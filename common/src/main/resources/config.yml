@@ -14,3 +14,6 @@ status:
       port: 25566
       timeout: 5000
       cache-expiration: -1
+
+  replacement:
+    strategy: "DELEGATE"

@@ -1,6 +1,7 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
+import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.common.status.source.CacheLayerSource;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSourceType;
@@ -92,6 +93,7 @@ public final class DummyConfiguration implements Configuration {
         private long globalCacheExpiration;
         private boolean requestOnDemand;
         private List<StatusSource> sources;
+        private Replacement replacement;
 
         @Override
         public boolean enabled() {
@@ -111,6 +113,11 @@ public final class DummyConfiguration implements Configuration {
         @Override
         public @NotNull List<StatusSource> sources() {
             return this.sources;
+        }
+
+        @Override
+        public Configuration.Status.@NotNull Replacement replacement() {
+            return this.replacement;
         }
 
         public void setEnabled(final boolean enabled) {
@@ -150,10 +157,34 @@ public final class DummyConfiguration implements Configuration {
             this.sources = Preconditions.requireNonNullEntries(sources, "sources");
         }
 
+        public void setReplacement(final Replacement replacement) {
+            this.replacement = replacement;
+        }
+
         @Override
         public String toString() {
             return "Status{" + "enabled=" + this.enabled + ", globalCacheExpiration=" + this.globalCacheExpiration + ", requestOnDemand=" +
                     this.requestOnDemand + ", sources=" + this.sources + '}';
+        }
+
+        public static final class Replacement implements Configuration.Status.Replacement {
+
+            private ReplacementStrategy strategy;
+
+            @Override
+            public @NotNull ReplacementStrategy strategy() {
+                return this.strategy;
+            }
+
+            public void setStrategy(final ReplacementStrategy strategy) {
+                this.strategy = strategy;
+            }
+
+            @Override
+            public String toString() {
+                return "Replacement{" + "strategy=" + this.strategy + '}';
+            }
+
         }
 
     }
