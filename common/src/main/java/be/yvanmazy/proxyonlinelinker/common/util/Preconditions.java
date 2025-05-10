@@ -55,4 +55,13 @@ public final class Preconditions {
         }
     }
 
+    @Contract(pure = true)
+    public static @NotNull String requireNonBlank(final String string, final String name) {
+        checkNotNull(string, name);
+        if (string.isBlank()) {
+            throw new IllegalArgumentException(name + " must not be blank");
+        }
+        return string;
+    }
+
 }
