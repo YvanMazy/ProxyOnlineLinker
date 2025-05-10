@@ -1,0 +1,7 @@
+{
+  "id": "proxyonlinelinker",
+  "name": "ProxyOnlineLinker",
+  "version": "1.0",
+  "description": "Link online count between proxy and server - Velocity support.",
+  "main": "be.yvanmazy.proxyonlinelinker.velocity.Main"
+}
