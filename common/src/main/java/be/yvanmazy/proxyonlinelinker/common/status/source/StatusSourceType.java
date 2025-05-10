@@ -30,7 +30,7 @@ public enum StatusSourceType {
         return new PingSource(host, port, timeout, proxy);
     }),
     REDIS(accessor -> {
-        final String setKey = accessor.getString("setKey");
+        final String setKey = accessor.getString("set-key");
         return new RedisSource(setKey);
     });
 
