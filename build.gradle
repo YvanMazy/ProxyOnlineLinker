@@ -53,6 +53,8 @@ allprojects {
             archiveBaseName.set(rootProject.name + '-' + project.name)
         }
         archiveClassifier.set('')
+
+        relocate 'org.yaml.snakeyaml', 'be.yvanmazy.proxyonlinelinker.libs.snakeyaml'
     }
 
 }
