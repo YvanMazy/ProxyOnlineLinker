@@ -1,13 +1,20 @@
 package be.yvanmazy.proxyonlinelinker.transferproxy;
 
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingManager;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.DefaultBroadcastingManager;
 import be.yvanmazy.proxyonlinelinker.common.config.Configuration;
 import be.yvanmazy.proxyonlinelinker.common.config.ConfigurationReader;
+import be.yvanmazy.proxyonlinelinker.common.redis.DefaultJedisProvider;
+import be.yvanmazy.proxyonlinelinker.common.redis.JedisProvider;
 import be.yvanmazy.proxyonlinelinker.common.status.DefaultOnlineManager;
 import be.yvanmazy.proxyonlinelinker.common.status.OnlineManager;
 import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.transferproxy.listener.DelegateStatusListener;
+import io.netty.channel.group.ChannelGroup;
+import net.transferproxy.api.TransferProxy;
 import net.transferproxy.api.event.EventType;
 import net.transferproxy.api.event.listener.StatusListener;
+import net.transferproxy.api.network.NetworkServer;
 import net.transferproxy.api.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +28,7 @@ public final class Main implements Plugin {
 
     private Configuration configuration;
 
+    private BroadcastingManager broadcastingManager;
     private OnlineManager onlineManager;
 
     @Override
@@ -33,6 +41,14 @@ public final class Main implements Plugin {
             return;
         }
 
+        if (this.configuration.needRedis()) {
+            JedisProvider.INSTANCE.set(new DefaultJedisProvider(this.configuration.redis()));
+        }
+
+        if (this.configuration.broadcasting().enabled()) {
+            this.initBroadcasting();
+        }
+
         if (this.configuration.status().enabled()) {
             this.initStatusHandling();
         }
@@ -40,9 +56,30 @@ public final class Main implements Plugin {
 
     @Override
     public void onDisable() {
+        if (this.broadcastingManager != null) {
+            this.broadcastingManager.stop();
+        }
         if (this.onlineManager != null) {
             this.onlineManager.stop();
         }
+        if (JedisProvider.INSTANCE.isDefined()) {
+            JedisProvider.INSTANCE.get().stop();
+        }
+    }
+
+    private void initBroadcasting() {
+        this.broadcastingManager = new DefaultBroadcastingManager(() -> {
+            final NetworkServer networkServer = TransferProxy.getInstance().getNetworkServer();
+            if (networkServer == null) {
+                return 0;
+            }
+            final ChannelGroup group = networkServer.getGroup();
+            if (group == null) {
+                return 0;
+            }
+            return group.size();
+        });
+        this.broadcastingManager.start(this.configuration.broadcasting());
     }
 
     private void initStatusHandling() {
