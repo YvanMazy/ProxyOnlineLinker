@@ -80,6 +80,11 @@ public class PingSource implements StatusSource {
         }
     }
 
+    @Override
+    public @NotNull StatusSourceType type() {
+        return StatusSourceType.PING;
+    }
+
     private void warnError(final String message) {
         LOGGER.warn("Failed to ping: {}", message);
     }

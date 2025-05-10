@@ -37,4 +37,9 @@ public class RedisBroadcasting implements BroadcastingTarget {
         JedisProvider.INSTANCE.get().getJedis().hdel(this.setKey, this.serverId);
     }
 
+    @Override
+    public @NotNull BroadcastingTargetType type() {
+        return BroadcastingTargetType.REDIS;
+    }
+
 }

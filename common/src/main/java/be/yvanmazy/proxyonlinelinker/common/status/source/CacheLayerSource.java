@@ -32,4 +32,9 @@ public class CacheLayerSource implements StatusSource {
         return this.lastFetched;
     }
 
+    @Override
+    public @NotNull StatusSourceType type() {
+        return this.delegate.type();
+    }
+
 }

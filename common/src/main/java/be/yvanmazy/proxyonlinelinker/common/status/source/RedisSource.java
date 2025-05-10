@@ -24,4 +24,9 @@ public class RedisSource implements StatusSource {
         return total;
     }
 
+    @Override
+    public @NotNull StatusSourceType type() {
+        return StatusSourceType.REDIS;
+    }
+
 }
