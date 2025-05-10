@@ -1,6 +1,8 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
-import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTarget;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTargetType;
+import be.yvanmazy.proxyonlinelinker.common.redis.RedisMode;
 import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.common.status.source.CacheLayerSource;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
@@ -16,6 +18,7 @@ public final class DummyConfiguration implements Configuration {
     private General general;
     private Broadcasting broadcasting;
     private Status status;
+    private Redis redis;
 
     @Override
     public @NotNull General general() {
@@ -32,6 +35,11 @@ public final class DummyConfiguration implements Configuration {
         return ensureLoaded(this.status);
     }
 
+    @Override
+    public @NotNull Redis redis() {
+        return ensureLoaded(this.redis);
+    }
+
     public void setGeneral(final General general) {
         this.general = general;
     }
@@ -44,9 +52,14 @@ public final class DummyConfiguration implements Configuration {
         this.status = status;
     }
 
+    public void setRedis(final Redis redis) {
+        this.redis = redis;
+    }
+
     @Override
     public String toString() {
-        return "DummyConfiguration{" + "general=" + this.general + ", broadcasting=" + this.broadcasting + ", status=" + this.status + '}';
+        return "DummyConfiguration{" + "general=" + this.general + ", broadcasting=" + this.broadcasting + ", status=" + this.status +
+                ", redis=" + this.redis + '}';
     }
 
     private static <T> @NotNull T ensureLoaded(final T value) {
@@ -60,7 +73,9 @@ public final class DummyConfiguration implements Configuration {
     public static class Broadcasting implements Configuration.Broadcasting {
 
         private boolean enabled;
-        private BroadcastingMode mode;
+        private boolean onlyOnChange;
+        private long updatingInterval;
+        private List<BroadcastingTarget> targets;
 
         @Override
         public boolean enabled() {
@@ -68,21 +83,56 @@ public final class DummyConfiguration implements Configuration {
         }
 
         @Override
-        public @NotNull BroadcastingMode mode() {
-            return this.mode;
+        public boolean onlyOnChange() {
+            return this.onlyOnChange;
+        }
+
+        @Override
+        public long updatingInterval() {
+            return this.updatingInterval;
+        }
+
+        @Override
+        public @NotNull List<BroadcastingTarget> targets() {
+            return this.targets;
         }
 
         public void setEnabled(final boolean enabled) {
             this.enabled = enabled;
         }
 
-        public void setMode(final BroadcastingMode mode) {
-            this.mode = mode;
+        public void setOnlyOnChange(final boolean onlyOnChange) {
+            this.onlyOnChange = onlyOnChange;
+        }
+
+        public void setUpdatingInterval(final long updatingInterval) {
+            this.updatingInterval = updatingInterval;
+        }
+
+        public void setTargets(final List<Map<String, Object>> targets) {
+            final List<BroadcastingTarget> list = new ArrayList<>(targets.size());
+
+            for (final Map<String, Object> source : targets) {
+                final MapTypeAccessor accessor = new MapTypeAccessor(source);
+                final String rawType = accessor.getString("type");
+                final BroadcastingTargetType type = BroadcastingTargetType.valueOf(rawType.toUpperCase());
+
+                final BroadcastingTarget builtTarget = type.create(accessor);
+
+                list.add(builtTarget);
+            }
+
+            this.targets = Collections.unmodifiableList(list);
+        }
+
+        public void setRawTargets(final List<BroadcastingTarget> targets) {
+            this.targets = targets;
         }
 
         @Override
         public String toString() {
-            return "Broadcasting{" + "enabled=" + this.enabled + ", mode=" + this.mode + '}';
+            return "Broadcasting{" + "enabled=" + this.enabled + ", onlyOnUpdate=" + this.onlyOnChange + ", updatingInterval=" +
+                    this.updatingInterval + ", targets=" + this.targets + '}';
         }
 
     }
@@ -183,6 +233,199 @@ public final class DummyConfiguration implements Configuration {
             @Override
             public String toString() {
                 return "Replacement{" + "strategy=" + this.strategy + '}';
+            }
+
+        }
+
+    }
+
+    public static class Redis implements Configuration.Redis {
+
+        private RedisMode mode;
+        private String username;
+        private String password;
+        private int database;
+        private int timeoutMillis;
+        private int maxAttempts;
+        private long maxTotalRetriesDuration;
+        private Standalone standalone;
+        private Sentinel sentinel;
+        private Cluster cluster;
+
+        @Override
+        public @NotNull RedisMode mode() {
+            return this.mode;
+        }
+
+        @Override
+        public @NotNull String username() {
+            return this.username;
+        }
+
+        @Override
+        public @NotNull String password() {
+            return this.password;
+        }
+
+        @Override
+        public int database() {
+            return this.database;
+        }
+
+        @Override
+        public int timeoutMillis() {
+            return this.timeoutMillis;
+        }
+
+        @Override
+        public int maxAttempts() {
+            return this.maxAttempts;
+        }
+
+        @Override
+        public long maxTotalRetriesDuration() {
+            return this.maxTotalRetriesDuration;
+        }
+
+        @Override
+        public Configuration.Redis.@NotNull Standalone standalone() {
+            return this.standalone;
+        }
+
+        @Override
+        public Configuration.Redis.@NotNull Sentinel sentinel() {
+            return this.sentinel;
+        }
+
+        @Override
+        public Configuration.Redis.@NotNull Cluster cluster() {
+            return this.cluster;
+        }
+
+        public void setMode(final RedisMode mode) {
+            this.mode = mode;
+        }
+
+        public void setUsername(final String username) {
+            this.username = username;
+        }
+
+        public void setPassword(final String password) {
+            this.password = password;
+        }
+
+        public void setDatabase(final int database) {
+            this.database = database;
+        }
+
+        public void setTimeoutMillis(final int timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
+        }
+
+        public void setMaxAttempts(final int maxAttempts) {
+            this.maxAttempts = maxAttempts;
+        }
+
+        public void setMaxTotalRetriesDuration(final long maxTotalRetriesDuration) {
+            this.maxTotalRetriesDuration = maxTotalRetriesDuration;
+        }
+
+        public void setStandalone(final Standalone standalone) {
+            this.standalone = standalone;
+        }
+
+        public void setSentinel(final Sentinel sentinel) {
+            this.sentinel = sentinel;
+        }
+
+        public void setCluster(final Cluster cluster) {
+            this.cluster = cluster;
+        }
+
+        @Override
+        public String toString() {
+            return "Redis{" + "mode=" + this.mode + ", username='" + this.username + '\'' + ", password='" + this.password + '\'' +
+                    ", database=" + this.database + ", timeoutMillis=" + this.timeoutMillis + ", maxAttempts=" + this.maxAttempts +
+                    ", maxTotalRetriesDuration=" + this.maxTotalRetriesDuration + ", standalone=" + this.standalone + ", sentinel=" +
+                    this.sentinel + ", cluster=" + this.cluster + '}';
+        }
+
+        public static class Standalone implements Configuration.Redis.Standalone {
+
+            private String host;
+            private int port;
+
+            @Override
+            public @NotNull String host() {
+                return this.host;
+            }
+
+            @Override
+            public int port() {
+                return this.port;
+            }
+
+            public void setHost(final String host) {
+                this.host = host;
+            }
+
+            public void setPort(final int port) {
+                this.port = port;
+            }
+
+            @Override
+            public String toString() {
+                return "Standalone{" + "host='" + this.host + '\'' + ", port=" + this.port + '}';
+            }
+
+        }
+
+        public static class Sentinel implements Configuration.Redis.Sentinel {
+
+            private String masterName;
+            private List<String> sentinels;
+
+            @Override
+            public @NotNull String masterName() {
+                return this.masterName;
+            }
+
+            @Override
+            public @NotNull List<String> sentinels() {
+                return this.sentinels;
+            }
+
+            public void setMasterName(final String masterName) {
+                this.masterName = masterName;
+            }
+
+            public void setSentinels(final List<String> sentinels) {
+                this.sentinels = sentinels;
+            }
+
+            @Override
+            public String toString() {
+                return "Sentinel{" + "masterName='" + this.masterName + '\'' + ", sentinels=" + this.sentinels + '}';
+            }
+
+        }
+
+        public static class Cluster implements Configuration.Redis.Cluster {
+
+            private List<String> clusterNodes;
+
+            @Override
+            public @NotNull List<String> clusterNodes() {
+                return this.clusterNodes;
+            }
+
+            public void setClusterNodes(final List<String> clusterNodes) {
+                this.clusterNodes = clusterNodes;
+            }
+
+            @Override
+            public String toString() {
+                return "Cluster{" + "clusterNodes=" + this.clusterNodes + '}';
             }
 
         }

@@ -1,6 +1,8 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
-import be.yvanmazy.proxyonlinelinker.common.broadcasting.BroadcastingMode;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTarget;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.RedisBroadcasting;
+import be.yvanmazy.proxyonlinelinker.common.redis.RedisMode;
 import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
@@ -22,11 +24,19 @@ public interface Configuration extends StateValidator {
     @Contract(pure = true)
     @NotNull Status status();
 
+    @Contract(pure = true)
+    @NotNull Redis redis();
+
     @Override
     default void validate() {
         this.general().validate();
         this.broadcasting().validate();
         this.status().validate();
+        this.redis().validate();
+    }
+
+    default boolean needRedis() {
+        return (this.broadcasting().enabled() && this.broadcasting().targets().stream().anyMatch(RedisBroadcasting.class::isInstance));
     }
 
     interface General extends StateValidator {
@@ -43,11 +53,18 @@ public interface Configuration extends StateValidator {
         boolean enabled();
 
         @Contract(pure = true)
-        @NotNull BroadcastingMode mode();
+        boolean onlyOnChange();
+
+        @Contract(pure = true)
+        long updatingInterval();
+
+        @Contract(pure = true)
+        @NotNull List<BroadcastingTarget> targets();
 
         @Override
         default void validate() {
-            Preconditions.checkNotNull(this.mode(), "mode");
+            Preconditions.checkRange(this.updatingInterval(), 0L, Long.MAX_VALUE, "updatingInterval");
+            Preconditions.requireNonNullEntries(this.targets(), "targets");
         }
 
     }
@@ -90,6 +107,95 @@ public interface Configuration extends StateValidator {
             }
 
         }
+
+    }
+
+    interface Redis extends StateValidator {
+
+        @Contract(pure = true)
+        @NotNull RedisMode mode();
+
+        @Contract(pure = true)
+        @NotNull String username();
+
+        @Contract(pure = true)
+        @NotNull String password();
+
+        @Contract(pure = true)
+        int database();
+
+        @Contract(pure = true)
+        int timeoutMillis();
+
+        @Contract(pure = true)
+        int maxAttempts();
+
+        @Contract(pure = true)
+        long maxTotalRetriesDuration();
+
+        @Contract(pure = true)
+        @NotNull Standalone standalone();
+
+        @Contract(pure = true)
+        @NotNull Sentinel sentinel();
+
+        @Contract(pure = true)
+        @NotNull Cluster cluster();
+
+        @Override
+        default void validate() {
+            Preconditions.checkNotNull(this.mode(), "mode");
+            Preconditions.checkNotNull(this.username(), "username");
+            Preconditions.checkNotNull(this.password(), "password");
+            this.standalone().validate();
+            this.sentinel().validate();
+            this.cluster().validate();
+        }
+
+        interface Standalone extends StateValidator {
+
+            @Contract(pure = true)
+            @NotNull String host();
+
+            @Contract(pure = true)
+            int port();
+
+            @Override
+            default void validate() {
+                Preconditions.checkNotNull(this.host(), "host");
+                Preconditions.requirePort(this.port());
+            }
+
+        }
+
+        interface Sentinel extends StateValidator {
+
+            @Contract(pure = true)
+            @NotNull String masterName();
+
+            @Contract(pure = true)
+            @NotNull List<String> sentinels();
+
+            @Override
+            default void validate() {
+                Preconditions.checkNotNull(this.masterName(), "masterName");
+                Preconditions.requireNonNullEntries(this.sentinels(), "sentinels");
+            }
+
+        }
+
+        interface Cluster extends StateValidator {
+
+            @Contract(pure = true)
+            @NotNull List<String> clusterNodes();
+
+            @Override
+            default void validate() {
+                Preconditions.requireNonNullEntries(this.clusterNodes(), "clusterNodes");
+            }
+
+        }
+
 
     }
 

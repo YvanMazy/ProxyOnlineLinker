@@ -3,6 +3,12 @@ general:
 broadcasting:
   enabled: false
   mode: "REDIS"
+  only-on-change: false
+  updating-interval: 1000
+  redis:
+    set-key: "proxyonlinelinker:online"
+    server-id: "lobby1"
+    expiration-seconds: 60
 
 status:
   enabled: false
@@ -17,3 +23,24 @@ status:
 
   replacement:
     strategy: "DELEGATE"
+
+redis:
+  mode: "standalone"
+  username: ""
+  password: ""
+  database: 0
+  timeout-millis: 2000
+  max-attempts: 3
+  max-total-retries-duration: 15000
+  standalone:
+    host: "localhost"
+    port: 6379
+  sentinel:
+    masterName: "mymaster"
+    sentinels:
+      - "sentinel1.example.com:26379"
+      - "sentinel2.example.com:26379"
+  cluster:
+    cluster-nodes:
+      - "node1.example.com:7000"
+      - "node2.example.com:7001"
