@@ -30,7 +30,8 @@ public enum StatusSourceType {
         return new PingSource(host, port, timeout, proxy);
     }),
     REDIS(accessor -> {
-        throw new UnsupportedOperationException("Redis status source is not implemented yet");
+        final String setKey = accessor.getString("setKey");
+        return new RedisSource(setKey);
     });
 
     private final Function<MapTypeAccessor, StatusSource> factory;
