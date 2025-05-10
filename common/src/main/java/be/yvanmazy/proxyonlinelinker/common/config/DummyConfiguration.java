@@ -15,15 +15,9 @@ import java.util.*;
 
 public final class DummyConfiguration implements Configuration {
 
-    private General general;
     private Broadcasting broadcasting;
     private Status status;
     private Redis redis;
-
-    @Override
-    public @NotNull General general() {
-        return ensureLoaded(this.general);
-    }
 
     @Override
     public @NotNull Broadcasting broadcasting() {
@@ -40,10 +34,6 @@ public final class DummyConfiguration implements Configuration {
         return ensureLoaded(this.redis);
     }
 
-    public void setGeneral(final General general) {
-        this.general = general;
-    }
-
     public void setBroadcasting(final Broadcasting broadcasting) {
         this.broadcasting = broadcasting;
     }
@@ -58,16 +48,12 @@ public final class DummyConfiguration implements Configuration {
 
     @Override
     public String toString() {
-        return "DummyConfiguration{" + "general=" + this.general + ", broadcasting=" + this.broadcasting + ", status=" + this.status +
+        return "DummyConfiguration{" + "broadcasting=" + this.broadcasting + ", status=" + this.status +
                 ", redis=" + this.redis + '}';
     }
 
     private static <T> @NotNull T ensureLoaded(final T value) {
         return Objects.requireNonNull(value, "This configuration is not initialized");
-    }
-
-    public static class General implements Configuration.General {
-
     }
 
     public static class Broadcasting implements Configuration.Broadcasting {

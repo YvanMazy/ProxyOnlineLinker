@@ -1,14 +1,13 @@
-general:
-
 broadcasting:
   enabled: false
   mode: "REDIS"
   only-on-change: false
   updating-interval: 1000
-  redis:
-    set-key: "proxyonlinelinker:online"
-    server-id: "lobby1"
-    expiration-seconds: 60
+  targets:
+    - type: "REDIS"
+      set-key: "proxyonlinelinker:online"
+      server-id: "lobby1"
+      expire-seconds: 60
 
 status:
   enabled: false

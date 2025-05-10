@@ -1,10 +1,11 @@
 package be.yvanmazy.proxyonlinelinker.common.config;
 
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTarget;
-import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.RedisBroadcasting;
+import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTargetType;
 import be.yvanmazy.proxyonlinelinker.common.redis.RedisMode;
 import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrategy;
 import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSource;
+import be.yvanmazy.proxyonlinelinker.common.status.source.StatusSourceType;
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import be.yvanmazy.proxyonlinelinker.common.util.StateValidator;
 import org.jetbrains.annotations.Contract;
@@ -14,9 +15,6 @@ import org.jetbrains.annotations.Range;
 import java.util.List;
 
 public interface Configuration extends StateValidator {
-
-    @Contract(pure = true)
-    @NotNull General general();
 
     @Contract(pure = true)
     @NotNull Broadcasting broadcasting();
@@ -29,22 +27,16 @@ public interface Configuration extends StateValidator {
 
     @Override
     default void validate() {
-        this.general().validate();
         this.broadcasting().validate();
         this.status().validate();
         this.redis().validate();
     }
 
     default boolean needRedis() {
-        return (this.broadcasting().enabled() && this.broadcasting().targets().stream().anyMatch(RedisBroadcasting.class::isInstance));
-    }
-
-    interface General extends StateValidator {
-
-        @Override
-        default void validate() {
-        }
-
+        return (this.broadcasting().enabled() &&
+                this.broadcasting().targets().stream().map(BroadcastingTarget::type).anyMatch(t -> t == BroadcastingTargetType.REDIS)) ||
+                (this.status().enabled() &&
+                        this.status().sources().stream().map(StatusSource::type).anyMatch(t -> t == StatusSourceType.REDIS));
     }
 
     interface Broadcasting extends StateValidator {
