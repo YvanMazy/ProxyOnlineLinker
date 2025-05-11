@@ -41,6 +41,7 @@ public class PingSource implements StatusSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PingSource.class);
     private static final byte[] STATUS_REQUEST_PACKET = {0x00};
+    private static final int MAX_JSON_BYTE_LENGTH = 32767 * 3;
 
     private final String host;
     private final int port;
@@ -85,7 +86,11 @@ public class PingSource implements StatusSource {
                 return -1;
             }
 
-            final int jsonLength = readVarInt(in); // TODO: Check length validity
+            final int jsonLength = readVarInt(in);
+            if (jsonLength > MAX_JSON_BYTE_LENGTH) {
+                this.warnError("JSON length too long=" + jsonLength);
+                return -1;
+            }
             final byte[] jsonBytes = in.readNBytes(jsonLength);
             final String json = new String(jsonBytes, StandardCharsets.UTF_8);
 
