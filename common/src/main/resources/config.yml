@@ -1,45 +1,91 @@
+# Manage broadcasting of online-player counts.
 broadcasting:
+  # Enable or disable broadcasting feature.
   enabled: false
-  mode: "REDIS"
+  # Send an update only when the value changes.
+  # This is not recommended because if there is no change and the value expires, the target will lose the count.
   only-on-change: false
+  # Interval between broadcasts in milliseconds.
   updating-interval: 1000
+  # Targets that receive the broadcast.
+  # Available targets: REDIS
+  # Please note that options vary depending on the type of source.
+  # See the wiki for more information.
   targets:
     - type: "REDIS"
+      # Redis key or channel that stores the count.
       set-key: "proxyonlinelinker:online"
+      # Identifier for this server inside the network.
       server-id: "lobby1"
+      # Key time-to-live in seconds; use 0/negative to disable expiry.
+      # The expiration is important so that in case of a crash, the counter is reset.
       expire-seconds: 60
 
+# Manage fetching and displaying online-player counts.
 status:
+  # Enable or disable status feature.
   enabled: false
+  # Default cache lifetime in milliseconds.
   global-cache-expiration: 1500
+  # When true, fetch only upon request instead of on a schedule.
+  # This is not recommended as the client will have to wait for requests to return.
   request-on-demand: false
+  # Remote sources to query for player counts.
+  # Available types: PING, REDIS
+  # Please note that options vary depending on the type of source.
+  # Use the "cache-expiration" option to configure a cache per source.
+  # See the wiki for more information.
   sources:
     - type: "PING"
+      # Hostname of the server to ping.
       host: "localhost"
+      # Port of the server to ping.
       port: 25566
+      # Timeout for the ping in milliseconds.
       timeout: 5000
+      # Cache TTL for this source in milliseconds; use 0/negative to disable cache.
       cache-expiration: -1
 
+  # Controls how online-player counts are displayed.
   replacement:
+    # Algorithm that decides the replacement behavior.
+    # Available strategies: DELEGATE
     strategy: "DELEGATE"
 
+# Redis connection parameters for broadcasting and status.
+# This section is used only if any source or target uses Redis.
 redis:
-  mode: "standalone"
+  # Connection mode: STANDALONE, SENTINEL or CLUSTER.
+  mode: "STANDALONE"
+  # Username for authentication; leave empty for default user.
   username: ""
+  # Password for authentication if required; leave empty for no password.
   password: ""
+  # Database index.
   database: 0
+  # Socket read/write timeout in milliseconds.
   timeout-millis: 2000
+  # Maximum retries per command before failure.
   max-attempts: 3
+  # Total time window for all retries in milliseconds.
   max-total-retries-duration: 15000
+  # Parameters for Redis Standalone mode.
   standalone:
+    # Redis server hostname.
     host: "localhost"
+    # Redis server port.
     port: 6379
+  # Parameters for Redis Sentinel mode.
   sentinel:
-    masterName: "mymaster"
+    # Name of the master instance.
+    master-name: "mymaster"
+    # Addresses of sentinel nodes (host:port).
     sentinels:
       - "sentinel1.example.com:26379"
       - "sentinel2.example.com:26379"
+  # Parameters for Redis Cluster mode.
   cluster:
+    # Addresses of cluster nodes (host:port).
     cluster-nodes:
       - "node1.example.com:7000"
       - "node2.example.com:7001"
