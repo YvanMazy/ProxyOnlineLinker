@@ -83,7 +83,6 @@ public interface Configuration extends StateValidator {
 
         @Override
         default void validate() {
-            Preconditions.checkRange(this.globalCacheExpiration(), -1L, Long.MAX_VALUE, "globalCacheExpiration");
             Preconditions.requireNonNullEntries(this.sources(), "sources");
             this.replacement().validate();
         }

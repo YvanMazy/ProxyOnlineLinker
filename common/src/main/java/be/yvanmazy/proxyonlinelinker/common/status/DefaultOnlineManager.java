@@ -35,6 +35,9 @@ public class DefaultOnlineManager implements OnlineManager {
 
         if (!this.config.requestOnDemand()) {
             final long expiration = this.config.globalCacheExpiration();
+            if (expiration <= 1) {
+                throw new IllegalArgumentException("Global cache expiration must be > 1 when not requesting on demand!");
+            }
             this.executorService = Executors.newSingleThreadScheduledExecutor();
             // TODO: Add an option to sleep scheduler after X seconds of inactivity
             this.executorService.scheduleWithFixedDelay(() -> this.checkOnline(false), 0L, expiration, TimeUnit.MILLISECONDS);
@@ -57,7 +60,7 @@ public class DefaultOnlineManager implements OnlineManager {
     }
 
     private void checkOnline(final boolean checkExpiration) {
-        if (checkExpiration) {
+        if (checkExpiration && this.config.globalCacheExpiration() > 0) {
             final long now = System.currentTimeMillis();
             if (now - this.lastUpdate < this.config.globalCacheExpiration()) {
                 return;
