@@ -45,14 +45,16 @@ public class PingSource implements StatusSource {
     private final String host;
     private final int port;
     private final int timeout;
+    private final int protocol;
     private final Proxy proxy;
 
     private final byte[] handshakeDataPacket;
 
-    public PingSource(final @NotNull String host, final int port, final int timeout, final @Nullable Proxy proxy) {
+    public PingSource(final @NotNull String host, final int port, final int timeout, final int protocol, final @Nullable Proxy proxy) {
         this.host = Objects.requireNonNull(host, "host must not be null");
         this.port = Preconditions.requirePort(port);
         this.timeout = Math.max(timeout, 0);
+        this.protocol = protocol;
         this.proxy = proxy;
 
         try {
@@ -116,8 +118,7 @@ public class PingSource implements StatusSource {
     private byte[] buildHandshakePacket() throws IOException {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         writeVarInt(stream, 0x00); // Packet ID
-        // TODO: Add an option to configure protocol
-        writeVarInt(stream, 759); // Protocol ID (759 = 1.20.4)
+        writeVarInt(stream, this.protocol); // Protocol ID
         writeString(stream, this.host); // Write host
         stream.write((this.port >>> 8) & 0xFF); // Port high‑byte
         stream.write(this.port & 0xFF); // Port low‑byte

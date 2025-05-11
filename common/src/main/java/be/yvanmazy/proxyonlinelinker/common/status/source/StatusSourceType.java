@@ -38,6 +38,7 @@ public enum StatusSourceType {
         final String host = accessor.getString("host");
         final int port = accessor.getInt("port", 25565);
         final int timeout = accessor.getInt("timeout", 5000);
+        final int protocol = accessor.getInt("protocol", 759); // (759 = 1.20.4)
 
         final Proxy proxy;
         final MapTypeAccessor proxyAccessor = accessor.getSubAccessor("proxy", MapTypeAccessor.EMPTY);
@@ -51,7 +52,7 @@ public enum StatusSourceType {
             proxy = null;
         }
 
-        return new PingSource(host, port, timeout, proxy);
+        return new PingSource(host, port, timeout, protocol, proxy);
     }),
     REDIS(accessor -> {
         final String setKey = accessor.getString("set-key");
