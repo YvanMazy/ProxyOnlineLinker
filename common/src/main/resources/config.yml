@@ -1,3 +1,8 @@
+# Configuration file for ProxyOnlineLinker.
+# By default, broadcasting and status features are disabled, enable the feature you want to use.
+# For more information, visit wiki: https://github.com/YvanMazy/ProxyOnlineLinker/wiki
+# If you have any issues, please report them here: https://github.com/YvanMazy/ProxyOnlineLinker/issues
+
 # Manage broadcasting of online-player counts.
 broadcasting:
   # Enable or disable broadcasting feature.
