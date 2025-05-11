@@ -1,6 +1,6 @@
 # 🔀 ProxyOnlineLinker
 
-## Overview
+## 🌐 Overview
 
 **ProxyOnlineLinker** is a plugin designed to link online player counts between proxies and servers in
 Minecraft. It supports multiple server types
@@ -41,4 +41,4 @@ that the project is able to exist and thrive.
 
 ## 📄 License - MIT
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/YvanMazy/ProxyOnlineLinker/blob/master/LICENSE) file for more details.
