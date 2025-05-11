@@ -24,7 +24,7 @@ public final class Main extends JavaPlugin {
     }
 
     private void initReplacement(final OnlineManager onlineManager, final ReplacementStrategy replacementStrategy) {
-        throw new UnsupportedOperationException("Replacement strategies is currently not supported");
+        throw new UnsupportedOperationException("Replacement strategies is currently not supported on Spigot.");
     }
 
 }
