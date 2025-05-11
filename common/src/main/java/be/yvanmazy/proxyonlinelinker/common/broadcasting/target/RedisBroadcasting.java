@@ -16,10 +16,7 @@ public class RedisBroadcasting implements BroadcastingTarget {
     public RedisBroadcasting(final @NotNull String serverId, final @NotNull String setKey, final int expireSeconds) {
         this.serverId = Objects.requireNonNull(serverId, "serverId must not be null");
         this.setKey = Objects.requireNonNull(setKey, "setKey must not be null");
-        this.expireSeconds = expireSeconds;
-        if (expireSeconds < 1) {
-            throw new IllegalArgumentException("expireSeconds must be >= 1");
-        }
+        this.expireSeconds = Math.max(expireSeconds, 0);
     }
 
     @Override
@@ -27,7 +24,9 @@ public class RedisBroadcasting implements BroadcastingTarget {
         final UnifiedJedis jedis = JedisProvider.INSTANCE.get().getJedis();
         try (final AbstractTransaction transaction = jedis.multi()) {
             transaction.hset(this.setKey, this.serverId, String.valueOf(online));
-            transaction.hexpire(this.setKey, this.expireSeconds, this.serverId);
+            if (this.expireSeconds > 0) {
+                transaction.hexpire(this.setKey, this.expireSeconds, this.serverId);
+            }
             transaction.exec();
         }
     }
