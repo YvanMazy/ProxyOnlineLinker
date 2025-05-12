@@ -54,7 +54,9 @@ allprojects {
         }
         archiveClassifier.set('')
 
-        relocate 'org.yaml.snakeyaml', 'be.yvanmazy.proxyonlinelinker.libs.snakeyaml'
+        if (project.name == 'spigot' || project.name == project.rootProject.name) {
+            relocate 'org.yaml.snakeyaml', 'be.yvanmazy.proxyonlinelinker.libs.snakeyaml'
+        }
     }
 
 }
