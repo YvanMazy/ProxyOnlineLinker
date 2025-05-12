@@ -66,6 +66,20 @@ public class MapTypeAccessor {
         return defaultValue;
     }
 
+    public boolean getBoolean(final @NotNull String key) {
+        if (this.getObject(key) instanceof final Boolean bool) {
+            return bool;
+        }
+        throw new ClassCastException("Value for key " + key + " is not a Boolean");
+    }
+
+    public boolean getBoolean(final @NotNull String key, final boolean defaultValue) {
+        if (this.getRawObject(key) instanceof final Boolean bool) {
+            return bool;
+        }
+        return defaultValue;
+    }
+
     public double getDouble(final @NotNull String key) {
         if (this.getObject(key) instanceof final Number number) {
             return number.doubleValue();

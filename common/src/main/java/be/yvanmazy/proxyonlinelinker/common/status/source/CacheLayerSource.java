@@ -34,15 +34,18 @@ public class CacheLayerSource implements StatusSource {
 
     private final StatusSource delegate;
     private final long expirationDelay;
+    private final boolean cacheFailure;
 
     private int lastFetched;
     private long lastUpdate;
 
-    public CacheLayerSource(final @NotNull StatusSource delegate, final @Range(from = 1L, to = Long.MAX_VALUE) long expirationDelay) {
+    public CacheLayerSource(final @NotNull StatusSource delegate,
+                            final @Range(from = 1L, to = Long.MAX_VALUE) long expirationDelay,
+                            final boolean cacheFailure) {
         this.delegate = Objects.requireNonNull(delegate, "delegate must not be null");
         Preconditions.checkRange(expirationDelay, 1L, Long.MAX_VALUE, "expirationDelay");
         this.expirationDelay = expirationDelay;
-        // TODO: Add an option to don't cache failures
+        this.cacheFailure = cacheFailure;
     }
 
     @Override
@@ -51,7 +54,11 @@ public class CacheLayerSource implements StatusSource {
         if (now - this.lastUpdate < this.expirationDelay) {
             return this.lastFetched;
         }
-        this.lastFetched = this.delegate.fetch();
+        final int fetched = this.delegate.fetch();
+        if (fetched < 0 && !this.cacheFailure) {
+            return this.lastFetched;
+        }
+        this.lastFetched = fetched;
         this.lastUpdate = now;
         return this.lastFetched;
     }

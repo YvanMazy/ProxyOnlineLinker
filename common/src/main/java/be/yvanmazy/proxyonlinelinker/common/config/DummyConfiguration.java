@@ -204,7 +204,8 @@ public final class DummyConfiguration implements Configuration {
 
                 final long cacheExpiration = accessor.getLong("cache-expiration", -1L);
                 if (cacheExpiration > 0) {
-                    builtSource = new CacheLayerSource(builtSource, cacheExpiration);
+                    final boolean cacheFailure = accessor.getBoolean("cache-failure", false);
+                    builtSource = new CacheLayerSource(builtSource, cacheExpiration, cacheFailure);
                 }
 
                 list.add(builtSource);
