@@ -36,6 +36,7 @@ import be.yvanmazy.proxyonlinelinker.common.status.replacement.ReplacementStrate
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,8 @@ public class ProxyOnlineLinker {
     private final IntSupplier onlineSupplier;
     private final BiConsumer<OnlineManager, ReplacementStrategy> replacementConsumer;
     private Configuration configuration;
+
+    private JedisProvider jedisProvider;
 
     private BroadcastingManager broadcastingManager;
     private OnlineManager onlineManager;
@@ -74,8 +77,10 @@ public class ProxyOnlineLinker {
         }
 
         if (this.configuration.needRedis()) {
-            JedisProvider.INSTANCE.set(new DefaultJedisProvider(this.configuration.redis()));
+            this.jedisProvider = new DefaultJedisProvider(this.configuration.redis());
         }
+
+        this.configuration.init(this);
 
         if (this.configuration.broadcasting().enabled()) {
             this.initBroadcasting();
@@ -93,8 +98,8 @@ public class ProxyOnlineLinker {
         if (this.onlineManager != null) {
             this.onlineManager.stop();
         }
-        if (JedisProvider.INSTANCE.isDefined()) {
-            JedisProvider.INSTANCE.get().stop();
+        if (this.jedisProvider != null) {
+            this.jedisProvider.stop();
         }
     }
 
@@ -119,6 +124,16 @@ public class ProxyOnlineLinker {
     @Contract(pure = true)
     public @NotNull String getImplementationName() {
         return this.implementationName;
+    }
+
+    @Contract(pure = true)
+    public @NotNull JedisProvider getSafeJedisProvider() {
+        return Objects.requireNonNull(this.jedisProvider, "Redis is not correctly enabled");
+    }
+
+    @Contract(pure = true)
+    public @Nullable JedisProvider getJedisProvider() {
+        return this.jedisProvider;
     }
 
     @Contract(pure = true)

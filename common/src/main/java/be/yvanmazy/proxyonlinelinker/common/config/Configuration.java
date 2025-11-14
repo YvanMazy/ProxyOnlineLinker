@@ -24,6 +24,8 @@
 
 package be.yvanmazy.proxyonlinelinker.common.config;
 
+import be.yvanmazy.proxyonlinelinker.common.InitializableElement;
+import be.yvanmazy.proxyonlinelinker.common.ProxyOnlineLinker;
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTarget;
 import be.yvanmazy.proxyonlinelinker.common.broadcasting.target.BroadcastingTargetType;
 import be.yvanmazy.proxyonlinelinker.common.redis.RedisMode;
@@ -48,6 +50,26 @@ public interface Configuration extends StateValidator {
 
     @Contract(pure = true)
     @NotNull Redis redis();
+
+    default void init(final @NotNull ProxyOnlineLinker proxyOnlineLinker) {
+        Preconditions.checkNotNull(proxyOnlineLinker, "proxyOnlineLinker");
+        final Broadcasting broadcasting = this.broadcasting();
+        if (broadcasting.enabled()) {
+            for (final BroadcastingTarget target : broadcasting.targets()) {
+                if (target instanceof final InitializableElement element) {
+                    element.init(proxyOnlineLinker);
+                }
+            }
+        }
+        final Status status = this.status();
+        if (status.enabled()) {
+            for (final StatusSource source : status.sources()) {
+                if (source instanceof final InitializableElement element) {
+                    element.init(proxyOnlineLinker);
+                }
+            }
+        }
+    }
 
     @Override
     default void validate() {

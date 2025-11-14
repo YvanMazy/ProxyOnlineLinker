@@ -22,36 +22,12 @@
  * SOFTWARE.
  */
 
-package be.yvanmazy.proxyonlinelinker.common.util;
+package be.yvanmazy.proxyonlinelinker.common;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+public interface InitializableElement {
 
-public final class Constant<T> {
-
-    private T value;
-
-    @Contract(pure = true)
-    public @NotNull T get() {
-        final T value = this.value;
-        if (value == null) {
-            throw new IllegalStateException("This constant is not set");
-        }
-        return value;
-    }
-
-    public void set(final @NotNull T value) {
-        if (this.value != null) {
-            throw new IllegalStateException("This constant is already set");
-        }
-        this.value = Objects.requireNonNull(value, "value must not be null");
-    }
-
-    @Contract(pure = true)
-    public boolean isDefined() {
-        return this.value != null;
-    }
+    void init(final @NotNull ProxyOnlineLinker proxyOnlineLinker);
 
 }

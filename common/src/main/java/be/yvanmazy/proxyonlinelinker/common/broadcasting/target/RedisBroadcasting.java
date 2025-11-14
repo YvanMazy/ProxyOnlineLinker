@@ -24,6 +24,8 @@
 
 package be.yvanmazy.proxyonlinelinker.common.broadcasting.target;
 
+import be.yvanmazy.proxyonlinelinker.common.InitializableElement;
+import be.yvanmazy.proxyonlinelinker.common.ProxyOnlineLinker;
 import be.yvanmazy.proxyonlinelinker.common.redis.JedisProvider;
 import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.AbstractTransaction;
@@ -31,11 +33,13 @@ import redis.clients.jedis.UnifiedJedis;
 
 import java.util.Objects;
 
-public class RedisBroadcasting implements BroadcastingTarget {
+public class RedisBroadcasting implements BroadcastingTarget, InitializableElement {
 
     private final String serverId;
     private final String setKey;
     private final int expireSeconds;
+
+    private JedisProvider jedisProvider;
 
     public RedisBroadcasting(final @NotNull String serverId, final @NotNull String setKey, final int expireSeconds) {
         this.serverId = Objects.requireNonNull(serverId, "serverId must not be null");
@@ -44,8 +48,13 @@ public class RedisBroadcasting implements BroadcastingTarget {
     }
 
     @Override
+    public void init(final @NotNull ProxyOnlineLinker proxyOnlineLinker) {
+        this.jedisProvider = proxyOnlineLinker.getSafeJedisProvider();
+    }
+
+    @Override
     public void broadcast(final int online) {
-        final UnifiedJedis jedis = JedisProvider.INSTANCE.get().getJedis();
+        final UnifiedJedis jedis = this.jedisProvider.getJedis();
         try (final AbstractTransaction transaction = jedis.multi()) {
             transaction.hset(this.setKey, this.serverId, String.valueOf(online));
             if (this.expireSeconds > 0) {
@@ -57,7 +66,7 @@ public class RedisBroadcasting implements BroadcastingTarget {
 
     @Override
     public void shutdown() {
-        JedisProvider.INSTANCE.get().getJedis().hdel(this.setKey, this.serverId);
+        this.jedisProvider.getJedis().hdel(this.setKey, this.serverId);
     }
 
     @Override

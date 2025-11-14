@@ -24,12 +24,15 @@
 
 package be.yvanmazy.proxyonlinelinker.common.status.source;
 
+import be.yvanmazy.proxyonlinelinker.common.InitializableElement;
+import be.yvanmazy.proxyonlinelinker.common.ProxyOnlineLinker;
 import be.yvanmazy.proxyonlinelinker.common.redis.JedisProvider;
 import be.yvanmazy.proxyonlinelinker.common.util.Preconditions;
 import org.jetbrains.annotations.NotNull;
 
-public class RedisSource implements StatusSource {
+public class RedisSource implements StatusSource, InitializableElement {
 
+    private JedisProvider jedisProvider;
     private final String setKey;
 
     public RedisSource(final @NotNull String setKey) {
@@ -37,9 +40,14 @@ public class RedisSource implements StatusSource {
     }
 
     @Override
+    public void init(final @NotNull ProxyOnlineLinker proxyOnlineLinker) {
+        this.jedisProvider = proxyOnlineLinker.getSafeJedisProvider();
+    }
+
+    @Override
     public int fetch() {
         int total = 0;
-        for (final String string : JedisProvider.INSTANCE.get().getJedis().hvals(this.setKey)) {
+        for (final String string : this.jedisProvider.getJedis().hvals(this.setKey)) {
             try {
                 total += Integer.parseInt(string);
             } catch (final NumberFormatException ignored) {
