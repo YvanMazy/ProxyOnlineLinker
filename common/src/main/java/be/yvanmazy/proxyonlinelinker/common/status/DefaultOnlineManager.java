@@ -60,12 +60,15 @@ public class DefaultOnlineManager implements OnlineManager {
             LOGGER.warn("No status sources configured, online count will always be 0!");
         }
 
+        if (!this.config.requestOnDemand() || this.config.parallelRequestOnDemand()) {
+            this.executorService = Executors.newSingleThreadScheduledExecutor();
+        }
+
         if (!this.config.requestOnDemand()) {
             final long expiration = this.config.globalCacheExpiration();
             if (expiration <= 1) {
                 throw new IllegalArgumentException("Global cache expiration must be > 1 when not requesting on demand!");
             }
-            this.executorService = Executors.newSingleThreadScheduledExecutor();
             // TODO: Add an option to sleep scheduler after X seconds of inactivity
             this.executorService.scheduleWithFixedDelay(this::updateOnline, 0L, expiration, TimeUnit.MILLISECONDS);
         }
