@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultOnlineManager implements OnlineManager {
 
@@ -45,6 +46,8 @@ public class DefaultOnlineManager implements OnlineManager {
 
     private long lastUpdate;
     private int online;
+
+    private final AtomicBoolean updating = new AtomicBoolean();
 
     @Override
     public void start(final @NotNull Configuration configuration) {
@@ -64,7 +67,7 @@ public class DefaultOnlineManager implements OnlineManager {
             }
             this.executorService = Executors.newSingleThreadScheduledExecutor();
             // TODO: Add an option to sleep scheduler after X seconds of inactivity
-            this.executorService.scheduleWithFixedDelay(() -> this.checkOnline(false), 0L, expiration, TimeUnit.MILLISECONDS);
+            this.executorService.scheduleWithFixedDelay(this::updateOnline, 0L, expiration, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -77,21 +80,27 @@ public class DefaultOnlineManager implements OnlineManager {
 
     @Override
     public int getOnlineCount() {
-        if (this.config.requestOnDemand()) {
-            this.checkOnline(true);
+        if (this.config.requestOnDemand() && this.processExpiration()) {
+            if (this.config.parallelRequestOnDemand()) {
+                if (this.updating.compareAndSet(false, true)) {
+                    this.executorService.execute(this::parallelUpdateOnline);
+                }
+            } else {
+                this.updateOnline();
+            }
         }
         return this.online;
     }
 
-    private void checkOnline(final boolean checkExpiration) {
-        if (checkExpiration && this.config.globalCacheExpiration() > 0) {
-            final long now = System.currentTimeMillis();
-            if (now - this.lastUpdate < this.config.globalCacheExpiration()) {
-                return;
-            }
-            this.lastUpdate = now;
+    private void parallelUpdateOnline() {
+        try {
+            this.updateOnline();
+        } finally {
+            this.updating.set(false);
         }
+    }
 
+    private void updateOnline() {
         int total = 0;
         for (final StatusSource source : this.config.sources()) {
             try {
@@ -105,6 +114,18 @@ public class DefaultOnlineManager implements OnlineManager {
             }
         }
         this.online = total;
+    }
+
+    private boolean processExpiration() {
+        if (this.config.globalCacheExpiration() <= 0) {
+            return true;
+        }
+        final long now = System.currentTimeMillis();
+        if (now - this.lastUpdate < this.config.globalCacheExpiration()) {
+            return false;
+        }
+        this.lastUpdate = now;
+        return true;
     }
 
     @Contract(pure = true)

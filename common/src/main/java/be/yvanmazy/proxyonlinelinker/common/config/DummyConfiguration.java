@@ -72,8 +72,7 @@ public final class DummyConfiguration implements Configuration {
 
     @Override
     public String toString() {
-        return "DummyConfiguration{" + "broadcasting=" + this.broadcasting + ", status=" + this.status +
-                ", redis=" + this.redis + '}';
+        return "DummyConfiguration{" + "broadcasting=" + this.broadcasting + ", status=" + this.status + ", redis=" + this.redis + '}';
     }
 
     private static <T> @NotNull T ensureLoaded(final T value) {
@@ -152,6 +151,7 @@ public final class DummyConfiguration implements Configuration {
         private boolean enabled;
         private long globalCacheExpiration;
         private boolean requestOnDemand;
+        private boolean parallelRequestOnDemand;
         private List<StatusSource> sources;
         private Replacement replacement;
 
@@ -168,6 +168,11 @@ public final class DummyConfiguration implements Configuration {
         @Override
         public boolean requestOnDemand() {
             return this.requestOnDemand;
+        }
+
+        @Override
+        public boolean parallelRequestOnDemand() {
+            return this.parallelRequestOnDemand;
         }
 
         @Override
@@ -190,6 +195,10 @@ public final class DummyConfiguration implements Configuration {
 
         public void setRequestOnDemand(final boolean requestOnDemand) {
             this.requestOnDemand = requestOnDemand;
+        }
+
+        public void setParallelRequestOnDemand(final boolean parallelRequestOnDemand) {
+            this.parallelRequestOnDemand = parallelRequestOnDemand;
         }
 
         public void setSources(final List<Map<String, Object>> sources) {

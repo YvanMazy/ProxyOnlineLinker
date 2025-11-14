@@ -122,6 +122,9 @@ public interface Configuration extends StateValidator {
         boolean requestOnDemand();
 
         @Contract(pure = true)
+        boolean parallelRequestOnDemand();
+
+        @Contract(pure = true)
         @NotNull List<StatusSource> sources();
 
         @Contract(pure = true)

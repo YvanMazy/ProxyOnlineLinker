@@ -33,8 +33,14 @@ status:
   # Default cache lifetime in milliseconds.
   global-cache-expiration: 1500
   # When true, fetch only upon request instead of on a schedule.
-  # This is not recommended as the client will have to wait for requests to return.
+  # This is not recommended without parallel-request-on-demand as the client will have to wait for requests to return.
   request-on-demand: false
+  # When true, requests sent on demand are executed in parallel to avoid blocking requests.
+  # This means that until the parallel request is complete, the number of connected users will not be updated.
+  # Only one parallel request will be executed at a time,
+  # so if multiple requests are made simultaneously, only one will trigger parallel retrieval.
+  # (Requires the request-on-demand option to be enabled.)
+  parallel-request-on-demand: true
   # Remote sources to query for player counts.
   # Available types: PING, REDIS
   # Please note that options vary depending on the type of source.
