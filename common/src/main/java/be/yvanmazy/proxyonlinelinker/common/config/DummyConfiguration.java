@@ -152,6 +152,7 @@ public final class DummyConfiguration implements Configuration {
         private long globalCacheExpiration;
         private boolean requestOnDemand;
         private boolean parallelRequestOnDemand;
+        private long inactivityTimeout;
         private List<StatusSource> sources;
         private Replacement replacement;
 
@@ -173,6 +174,11 @@ public final class DummyConfiguration implements Configuration {
         @Override
         public boolean parallelRequestOnDemand() {
             return this.parallelRequestOnDemand;
+        }
+
+        @Override
+        public long inactivityTimeout() {
+            return this.inactivityTimeout;
         }
 
         @Override
@@ -199,6 +205,10 @@ public final class DummyConfiguration implements Configuration {
 
         public void setParallelRequestOnDemand(final boolean parallelRequestOnDemand) {
             this.parallelRequestOnDemand = parallelRequestOnDemand;
+        }
+
+        public void setInactivityTimeout(final long inactivityTimeout) {
+            this.inactivityTimeout = inactivityTimeout;
         }
 
         public void setSources(final List<Map<String, Object>> sources) {
@@ -234,7 +244,8 @@ public final class DummyConfiguration implements Configuration {
         @Override
         public String toString() {
             return "Status{" + "enabled=" + this.enabled + ", globalCacheExpiration=" + this.globalCacheExpiration + ", requestOnDemand=" +
-                    this.requestOnDemand + ", sources=" + this.sources + '}';
+                    this.requestOnDemand + ", parallelRequestOnDemand=" + this.parallelRequestOnDemand + ", inactivityTimeout=" +
+                    this.inactivityTimeout + ", sources=" + this.sources + '}';
         }
 
         public static final class Replacement implements Configuration.Status.Replacement {

@@ -125,6 +125,10 @@ public interface Configuration extends StateValidator {
         boolean parallelRequestOnDemand();
 
         @Contract(pure = true)
+        @Range(from = 0L, to = Long.MAX_VALUE)
+        long inactivityTimeout();
+
+        @Contract(pure = true)
         @NotNull List<StatusSource> sources();
 
         @Contract(pure = true)

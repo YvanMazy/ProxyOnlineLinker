@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,11 +44,14 @@ public class DefaultOnlineManager implements OnlineManager {
 
     private Configuration.Status config;
     private ScheduledExecutorService executorService;
+    private ScheduledFuture<?> scheduledTask;
 
     private long lastUpdate;
+    private long lastAccess;
     private int online;
 
     private final AtomicBoolean updating = new AtomicBoolean();
+    private final Object schedulerLock = new Object();
 
     @Override
     public void start(final @NotNull Configuration configuration) {
@@ -69,13 +73,18 @@ public class DefaultOnlineManager implements OnlineManager {
             if (expiration <= 1) {
                 throw new IllegalArgumentException("Global cache expiration must be > 1 when not requesting on demand!");
             }
-            // TODO: Add an option to sleep scheduler after X seconds of inactivity
-            this.executorService.scheduleWithFixedDelay(this::updateOnline, 0L, expiration, TimeUnit.MILLISECONDS);
+            this.startScheduler();
         }
     }
 
     @Override
     public void stop() {
+        synchronized (this.schedulerLock) {
+            if (this.scheduledTask != null) {
+                this.scheduledTask.cancel(true);
+                this.scheduledTask = null;
+            }
+        }
         if (this.executorService != null) {
             this.executorService.shutdownNow();
         }
@@ -83,7 +92,10 @@ public class DefaultOnlineManager implements OnlineManager {
 
     @Override
     public int getOnlineCount() {
-        if (this.config.requestOnDemand() && this.processExpiration()) {
+        if (!this.config.requestOnDemand()) {
+            this.lastAccess = System.currentTimeMillis();
+            this.wakeUpScheduler();
+        } else if (this.processExpiration()) {
             if (this.config.parallelRequestOnDemand()) {
                 if (this.updating.compareAndSet(false, true)) {
                     this.executorService.execute(this::parallelUpdateOnline);
@@ -117,6 +129,7 @@ public class DefaultOnlineManager implements OnlineManager {
             }
         }
         this.online = total;
+        this.checkInactivityAndSleep();
     }
 
     private boolean processExpiration() {
@@ -129,6 +142,49 @@ public class DefaultOnlineManager implements OnlineManager {
         }
         this.lastUpdate = now;
         return true;
+    }
+
+    private void startScheduler() {
+        synchronized (this.schedulerLock) {
+            if (this.scheduledTask == null || this.scheduledTask.isCancelled()) {
+                this.lastAccess = System.currentTimeMillis();
+                final long expiration = this.config.globalCacheExpiration();
+                this.scheduledTask = this.executorService.scheduleWithFixedDelay(this::updateOnline, 0L, expiration, TimeUnit.MILLISECONDS);
+                LOGGER.debug("Scheduler started with {}ms interval", expiration);
+            }
+        }
+    }
+
+    private void wakeUpScheduler() {
+        if (this.config.inactivityTimeout() <= 0) {
+            return;
+        }
+        synchronized (this.schedulerLock) {
+            if (this.scheduledTask == null || this.scheduledTask.isCancelled()) {
+                LOGGER.debug("Waking up scheduler after inactivity");
+                this.startScheduler();
+            }
+        }
+    }
+
+    private void checkInactivityAndSleep() {
+        final long inactivityTimeout = this.config.inactivityTimeout();
+        if (inactivityTimeout <= 0) {
+            return;
+        }
+
+        final long now = System.currentTimeMillis();
+        final long inactiveDuration = now - this.lastAccess;
+
+        if (inactiveDuration >= inactivityTimeout) {
+            synchronized (this.schedulerLock) {
+                if (this.scheduledTask != null && !this.scheduledTask.isCancelled()) {
+                    LOGGER.debug("Stopping scheduler after {}ms of inactivity (threshold: {}ms)", inactiveDuration, inactivityTimeout);
+                    this.scheduledTask.cancel(false);
+                    this.scheduledTask = null;
+                }
+            }
+        }
     }
 
     @Contract(pure = true)

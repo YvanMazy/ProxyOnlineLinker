@@ -41,6 +41,12 @@ status:
   # so if multiple requests are made simultaneously, only one will trigger parallel retrieval.
   # (Requires the request-on-demand option to be enabled.)
   parallel-request-on-demand: true
+  # Time in milliseconds of inactivity before pausing the scheduler.
+  # Assuming you have a “PING” source with a global-cache-expiration of 1500, a ping will be sent every 1500 milliseconds.
+  # This option allows the task to be paused if no client makes a request after X milliseconds.
+  # If a client makes a request, the task will automatically resume. Use 0 to disable this feature.
+  # (Only applies when request-on-demand is false.)
+  inactivity-timeout: 0
   # Remote sources to query for player counts.
   # Available types: PING, REDIS
   # Please note that options vary depending on the type of source.
