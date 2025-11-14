@@ -137,6 +137,11 @@ public class ProxyOnlineLinker {
     }
 
     @Contract(pure = true)
+    public @NotNull IntSupplier getOnlineSupplier() {
+        return this.onlineSupplier;
+    }
+
+    @Contract(pure = true)
     public @NotNull Configuration getConfiguration() {
         return this.configuration;
     }

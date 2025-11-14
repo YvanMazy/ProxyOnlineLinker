@@ -34,6 +34,7 @@ import java.util.function.Function;
 
 public enum StatusSourceType {
 
+    SELF(accessor -> new SelfSource()),
     PING(accessor -> {
         final String host = accessor.getString("host");
         final int port = accessor.getInt("port", 25565);
