@@ -38,7 +38,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 
 import java.nio.file.Path;
 
-@Plugin(id = "proxyonlinelinker", name = "ProxyOnlineLinker", version = "1.0")
+@Plugin(id = "proxyonlinelinker", name = "ProxyOnlineLinker", version = "1.1.0")
 public final class Main {
 
     private final ProxyServer proxyServer;
