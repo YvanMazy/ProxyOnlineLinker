@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '8.3.6' apply false
+    id 'com.gradleup.shadow' version '9.3.1' apply false
 }
 
 group = 'be.yvanmazy'
@@ -37,7 +37,7 @@ allprojects {
         }
 
         // Redis
-        implementation 'redis.clients:jedis:7.0.0'
+        implementation 'redis.clients:jedis:7.2.0'
     }
 
     java {

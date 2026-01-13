@@ -26,10 +26,8 @@ package be.yvanmazy.proxyonlinelinker.common.redis;
 
 import be.yvanmazy.proxyonlinelinker.common.config.Configuration;
 import org.jetbrains.annotations.NotNull;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
+import redis.clients.jedis.executors.RetryableCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
@@ -73,7 +71,10 @@ public class DefaultJedisProvider implements JedisProvider {
         final int maxAttempts = configuration.maxAttempts();
         final Duration maxTotalRetriesDuration = Duration.ofMillis(configuration.maxTotalRetriesDuration());
 
-        this.unifiedJedis = new UnifiedJedis(connectionProvider, maxAttempts, maxTotalRetriesDuration);
+        this.unifiedJedis = RedisClient.builder()
+                .connectionProvider(connectionProvider)
+                .commandExecutor(new RetryableCommandExecutor(connectionProvider, maxAttempts, maxTotalRetriesDuration))
+                .build();
 
         if (this.unifiedJedis.ping().isBlank()) {
             throw new IllegalStateException("Redis ping request failed!");
