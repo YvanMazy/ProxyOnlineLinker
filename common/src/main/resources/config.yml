@@ -48,11 +48,12 @@ status:
   # (Only applies when request-on-demand is false.)
   inactivity-timeout: 0
   # Remote sources to query for player counts.
-  # Available types: PING, REDIS
+  # Available types: SELF, PING, REDIS, FIXED
   # Please note that options vary depending on the type of source.
   # Use the "cache-expiration" option to configure a cache per source.
   # See the wiki for more information.
   sources:
+    - type: "SELF"
     - type: "PING"
       # Hostname of the server to ping.
       host: "localhost"
